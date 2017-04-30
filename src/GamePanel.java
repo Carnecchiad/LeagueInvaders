@@ -5,26 +5,56 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 public class GamePanel extends JPanel implements ActionListener , KeyListener{
+	public static BufferedImage alienImg;
+	public static BufferedImage rocketImg;
+	public static BufferedImage bulletImg;
+	public static BufferedImage spaceImg;
 	Timer t = new Timer(1000/60,this);
 	final int MENU_STATE = 0;
 	final int GAME_STATE = 1;
 	final int END_STATE = 2;
 	int CURRENT_STATE = MENU_STATE;
+	ObjectManager manager= new ObjectManager();
 	Font titleFont;
 	Font smallFont;
-	Rocketship ship = new Rocketship(250,700,50,50,5);
+	Rocketship ship = new Rocketship(250,700,90,120,5);
 	GamePanel(){
+		
+		try {
+			alienImg = ImageIO.read(this.getClass().getResourceAsStream("alien.png"));
+			rocketImg = ImageIO.read(this.getClass().getResourceAsStream("rocket.png"));
+			bulletImg = ImageIO.read(this.getClass().getResourceAsStream("bullet.png"));
+			spaceImg = ImageIO.read(this.getClass().getResourceAsStream("space.png"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		
 		titleFont = new Font("Zapfino",Font.PLAIN, 48);
 		smallFont = new Font("Arial",Font.PLAIN,22);
+		manager.addObject(ship);
 	}
 	void updateMenuState(){
 		
 	}
 	void updateGameState(){
-		ship.update();
+		manager.update();
+		manager.manageEnemies();
+		manager.checkCollision();
+		if(!ship.isAlive){
+			CURRENT_STATE = END_STATE;
+			manager.reset();
+			ship = new Rocketship(250,700,90,120,5);
+			manager.addObject(ship);
+			manager.getScore();
+		}
 	}
 	void updateEndState(){
 		
@@ -42,7 +72,9 @@ public class GamePanel extends JPanel implements ActionListener , KeyListener{
 	void drawGameState(Graphics g){
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, 500, 800);
-		ship.draw(g);
+		g.drawImage(GamePanel.spaceImg, 0, 0, 500, 800, null);
+
+		manager.draw(g);
 	}
 	void drawEndState(Graphics g){
 		g.setColor(Color.RED);
@@ -98,23 +130,43 @@ public class GamePanel extends JPanel implements ActionListener , KeyListener{
 			CURRENT_STATE = MENU_STATE;
 		}
 		if(e.getKeyCode() == KeyEvent.VK_UP){
-			ship.setY(ship.getY()-5);
+			ship.up = true;
 		}
 		if(e.getKeyCode() == KeyEvent.VK_DOWN){
-			ship.setY(ship.getY()+5);
+			ship.down = true;
 		}
 		if(e.getKeyCode() == KeyEvent.VK_RIGHT){
-			ship.setX(ship.getX()+5);
+			ship.right = true;
 		}
 		if(e.getKeyCode() == KeyEvent.VK_LEFT){
-			ship.setX(ship.getX()-5);
+			ship.left = true;
 		}
+		if(e.getKeyCode() == KeyEvent.VK_SPACE){
+			ship.shoot = true;
+		}
+		if(ship.shoot){
+			manager.addObject(new Projectile(ship.x + 20, ship.y, 30, 50));
 
+		}
 	}
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-		
+		if(e.getKeyCode() == KeyEvent.VK_UP){
+			ship.up = false;
+		}
+		if(e.getKeyCode() == KeyEvent.VK_DOWN){
+			ship.down = false;
+		}
+		if(e.getKeyCode() == KeyEvent.VK_RIGHT){
+			ship.right = false;
+		}
+		if(e.getKeyCode() == KeyEvent.VK_LEFT){
+			ship.left = false;
+		}
+		if(e.getKeyCode() == KeyEvent.VK_SPACE){
+			ship.shoot = false;
+		}
 		
 	}
 }
