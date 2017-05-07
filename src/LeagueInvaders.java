@@ -21,6 +21,6 @@ public class LeagueInvaders {
 	
 	public static void main(String[] args) {
 		LeagueInvaders game = new LeagueInvaders();
-		
+		      
 	}
 }

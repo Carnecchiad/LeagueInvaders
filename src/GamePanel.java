@@ -15,22 +15,26 @@ public class GamePanel extends JPanel implements ActionListener , KeyListener{
 	public static BufferedImage rocketImg;
 	public static BufferedImage bulletImg;
 	public static BufferedImage spaceImg;
+	public static BufferedImage powerUpImg;
 	Timer t = new Timer(1000/60,this);
 	final int MENU_STATE = 0;
 	final int GAME_STATE = 1;
 	final int END_STATE = 2;
+	boolean canFire;
 	int CURRENT_STATE = MENU_STATE;
 	ObjectManager manager= new ObjectManager();
+	GameObject meter = new GameObject();
 	Font titleFont;
 	Font smallFont;
 	Rocketship ship = new Rocketship(250,700,90,120,5);
 	GamePanel(){
-		
+		canFire = true;
 		try {
 			alienImg = ImageIO.read(this.getClass().getResourceAsStream("alien.png"));
 			rocketImg = ImageIO.read(this.getClass().getResourceAsStream("rocket.png"));
 			bulletImg = ImageIO.read(this.getClass().getResourceAsStream("bullet.png"));
 			spaceImg = ImageIO.read(this.getClass().getResourceAsStream("space.png"));
+			powerUpImg = ImageIO.read(this.getClass().getResourceAsStream("powerup.png"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -54,6 +58,7 @@ public class GamePanel extends JPanel implements ActionListener , KeyListener{
 			ship = new Rocketship(250,700,90,120,5);
 			manager.addObject(ship);
 			manager.getScore();
+			meter.update();
 		}
 	}
 	void updateEndState(){
@@ -68,12 +73,23 @@ public class GamePanel extends JPanel implements ActionListener , KeyListener{
 		g.setFont(smallFont);
 		g.drawString("Press Enter to Start", 170, 240);
 		g.drawString("Space for Help", 170, 270);
+		
 	}
 	void drawGameState(Graphics g){
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, 500, 800);
 		g.drawImage(GamePanel.spaceImg, 0, 0, 500, 800, null);
-
+		if(ship.stamina > 50){
+		g.setColor(Color.GREEN);
+		}
+		if(ship.stamina > 25 && ship.stamina < 50){
+		g.setColor(Color.ORANGE);
+		}
+		if(ship.stamina < 25){			
+		g.setColor(Color.RED);
+		}
+		g.fillRect(100,20,(int) ship.stamina,20);
+		g.drawImage(GamePanel.powerUpImg,200,200,200,200,null);
 		manager.draw(g);
 	}
 	void drawEndState(Graphics g){
@@ -141,11 +157,16 @@ public class GamePanel extends JPanel implements ActionListener , KeyListener{
 		if(e.getKeyCode() == KeyEvent.VK_LEFT){
 			ship.left = true;
 		}
-		if(e.getKeyCode() == KeyEvent.VK_SPACE){
+		if(ship.stamina> 9){
+		if(e.getKeyCode() == KeyEvent.VK_SPACE && canFire){
+			manager.addObject(new Projectile(ship.x + 20, ship.y, 30, 50));
+			canFire = false;
 			ship.shoot = true;
+			ship.stamina -=10;
+		}
 		}
 		if(ship.shoot){
-			manager.addObject(new Projectile(ship.x + 20, ship.y, 30, 50));
+			
 
 		}
 	}
@@ -166,6 +187,7 @@ public class GamePanel extends JPanel implements ActionListener , KeyListener{
 		}
 		if(e.getKeyCode() == KeyEvent.VK_SPACE){
 			ship.shoot = false;
+			canFire = true;
 		}
 		
 	}

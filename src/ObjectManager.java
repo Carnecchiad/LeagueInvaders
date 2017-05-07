@@ -69,6 +69,12 @@ public class ObjectManager {
 						o1.isAlive = false;
 						o2.isAlive = false;
 					}
+					
+					else if((o1 instanceof Rocketship && o2 instanceof Powerup) ||
+					(o2 instanceof Rocketship && o1 instanceof Powerup)){
+						o2.isAlive = false;
+						o1.isAlive = false;
+					}
 	
 				}
 			}
